@@ -1,8 +1,7 @@
 # `tfe-run` Action
 
-[![CI](https://github.com/kvrhdn/tfe-run/workflows/CI/badge.svg)](https://github.com/kvrhdn/tfe-run/actions?query=workflow%3ACI)
-[![Integration](https://github.com/kvrhdn/tfe-run/workflows/Integration/badge.svg)](https://github.com/kvrhdn/tfe-run/actions?query=workflow%3AIntegration)
-[![Go Report Card](https://goreportcard.com/badge/github.com/kvrhdn/tfe-run)](https://goreportcard.com/report/github.com/kvrhdn/tfe-run)
+[![CI](https://github.com/danny02/tfe-run/workflows/CI/badge.svg)](https://github.com/danny02/tfe-run/actions?query=workflow%3ACI)
+[![Go Report Card](https://goreportcard.com/badge/github.com/danny02/tfe-run)](https://goreportcard.com/report/github.com/danny02/tfe-run)
 
 This GitHub Action creates a new run on Terraform Cloud. Integrate Terraform Cloud into your GitHub Actions workflow.
 
@@ -19,7 +18,7 @@ Internally, we leverage [the official Go API client from Hashicorp][go-tfe].
 ## How to use it
 
 ```yaml
-- uses: kvrhdn/tfe-run@v1
+- uses: danny02/tfe-run@v1
   with:
     token: ${{ secrets.TFE_TOKEN }}
     workspace: tfe-run
@@ -33,7 +32,7 @@ Internally, we leverage [the official Go API client from Hashicorp][go-tfe].
 Full option list:
 
 ```yaml
-- uses: kvrhdn/tfe-run@v1
+- uses: danny02/tfe-run@v1
   with:
     # Token used to communicate with the Terraform Cloud API. Must be a user or
     # team api token.
@@ -41,7 +40,7 @@ Full option list:
 
     # Name of the organization on Terraform Cloud. Defaults to the GitHub
     # organization name.
-    organization: kvrhdn
+    organization: danny02
 
     # Name of the workspace on Terraform Cloud.
     workspace: tfe-run

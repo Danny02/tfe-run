@@ -23,16 +23,15 @@ func InGitHubActions() bool {
 // the field name will be used as input key.
 //
 // Additional options can be supplied through the tags, separated by comma's:
-//  - required: returns an error if the input is not present or empty string
+//   - required: returns an error if the input is not present or empty string
 //
 // Example struct:
 //
-//     type Example struct {
-//         RunID     string `gha:"run-id,required"`
-//         Directory string `gha:""`
-//         DryRun    bool   `gha:"dry-run"`
-//     }
-//
+//	type Example struct {
+//	    RunID     string `gha:"run-id,required"`
+//	    Directory string `gha:""`
+//	    DryRun    bool   `gha:"dry-run"`
+//	}
 func PopulateFromInputs(v interface{}) (err error) {
 	rv := reflect.ValueOf(v)
 
