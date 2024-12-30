@@ -6,7 +6,6 @@ import (
 	"errors"
 	"fmt"
 	"os"
-	"path/filepath"
 	"strconv"
 	"strings"
 	"time"
@@ -20,12 +19,10 @@ type input struct {
 	Organization      string `gha:"organization,required"`
 	Workspace         string `gha:"workspace,required"`
 	Message           string
-	Directory         string
 	Type              string
 	Targets           string
 	Replacements      string
-	WaitForCompletion bool   `gha:"wait-for-completion"`
-	TfVars            string `gha:"tf-vars"`
+	WaitForCompletion bool `gha:"wait-for-completion"`
 }
 
 type ClientConfig struct {
@@ -121,90 +118,14 @@ type RunOutput struct {
 // If the run does not complete within one hour, ErrTimeout is returned. This
 // will not cancel the remote operation.
 func (c *Client) Run(ctx context.Context, options RunOptions) (output RunOutput, err error) {
-	cvOptions := tfe.ConfigurationVersionCreateOptions{
-		// Don't automatically queue the new run, we want to create the run
-		// manually to be able to set the message.
-		AutoQueueRuns: tfe.Bool(false),
-		Speculative:   tfe.Bool(options.Type == RunTypePlan),
-	}
-	cv, err := c.client.ConfigurationVersions.Create(ctx, c.workspace.ID, cvOptions)
-	if err != nil {
-		if err == tfe.ErrResourceNotFound {
-			err = fmt.Errorf("could not create configuration version (404 not found), this might happen if you are not using a user or team API token")
-		} else {
-			err = fmt.Errorf("could not create a new configuration version: %w", err)
-		}
-		return
-	}
-
-	var dir string
-	if options.Directory != nil {
-		dir = *options.Directory
-	} else {
-		dir = "./"
-	}
-
-	if options.TfVars != nil {
-		// Creating a *.auto.tfvars file that is uploaded with the rest of the
-		// code is the easiest way to temporarily set a variable. The Terraform
-		// Cloud API only allows setting workspace variables. These variables
-		// are persistent across runs which might cause undesired side-effects.
-		varsFile := filepath.Join(dir, c.workspace.WorkingDirectory, "run.auto.tfvars")
-
-		fmt.Printf("Creating temporary variables file %v\n", varsFile)
-
-		err = os.WriteFile(varsFile, []byte(*options.TfVars), 0644)
-		if err != nil {
-			err = fmt.Errorf("could not create run.auto.tfvars: %w", err)
-			return
-		}
-
-		defer func() {
-			err := os.Remove(varsFile)
-			if err != nil {
-				fmt.Printf("Could not remove run.auto.tfvars: %v", err)
-			}
-		}()
-	}
-
-	fmt.Print("Uploading directory...\n")
-
-	err = c.client.ConfigurationVersions.Upload(ctx, cv.UploadURL, dir)
-	if err != nil {
-		err = fmt.Errorf("could not upload directory '%v': %w", options.Directory, err)
-		return
-	}
-
-	fmt.Print("Done uploading.\n")
-
-	// wait until configuration version has status Uploaded
-	// this is also done in the Terraform implementation: https://github.com/hashicorp/terraform/blob/v0.13.1/backend/remote/backend_plan.go#L204-L231
-	err = pollWithContext(ctx, 5*time.Second, func() (bool, error) {
-		cv, err = c.client.ConfigurationVersions.Read(ctx, cv.ID)
-		if err != nil {
-			return false, fmt.Errorf("could not get current configuration version: %w", err)
-		}
-		if cv.Status == tfe.ConfigurationErrored {
-			return false, fmt.Errorf("configuration version errored: %v - %v", cv.Error, cv.ErrorMessage)
-		}
-		return cv.Status == tfe.ConfigurationUploaded, nil
-	})
-	if err != nil {
-		err = fmt.Errorf("uploading configuration version failed: %w", err)
-		return
-	}
-
-	fmt.Print("Configuration version is uploaded and processed.\n")
-
 	var r *tfe.Run
 
 	rOptions := tfe.RunCreateOptions{
-		Workspace:            c.workspace,
-		ConfigurationVersion: cv,
-		IsDestroy:            tfe.Bool(options.Type == RunTypeDestroy),
-		TargetAddrs:          options.TargetAddrs,
-		ReplaceAddrs:         options.ReplaceAddrs,
-		Message:              options.Message,
+		Workspace:    c.workspace,
+		IsDestroy:    tfe.Bool(options.Type == RunTypeDestroy),
+		TargetAddrs:  options.TargetAddrs,
+		ReplaceAddrs: options.ReplaceAddrs,
+		Message:      options.Message,
 	}
 	r, err = c.client.Runs.Create(ctx, rOptions)
 	if err != nil {
@@ -385,12 +306,10 @@ func main() {
 
 	options := RunOptions{
 		Message:           notEmptyOrNil(input.Message),
-		Directory:         notEmptyOrNil(input.Directory),
 		Type:              runType,
 		TargetAddrs:       notAllEmptyOrNil(strings.Split(input.Targets, "\n")),
 		ReplaceAddrs:      notAllEmptyOrNil(strings.Split(input.Replacements, "\n")),
 		WaitForCompletion: input.WaitForCompletion,
-		TfVars:            notEmptyOrNil(input.TfVars),
 	}
 	output, err := c.Run(ctx, options)
 	if err != nil {

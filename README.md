@@ -7,7 +7,6 @@ This GitHub Action creates a new run on Terraform Cloud. Integrate Terraform Clo
 
 This action creates runs using [the Terraform Cloud API][tfe-api] which provides more flexibility than using the CLI. Namely, you can:
 - define your own message (no more _"Queued manually using Terraform"_)
-- provide as many variables as you want
 - access the outputs from the Terraform state
 
 Internally, we leverage [the official Go API client from Hashicorp][go-tfe].
@@ -49,12 +48,6 @@ Full option list:
     message: |
       Run triggered using tfe-run (commit: ${{ github.SHA }})
 
-    # The directory that is uploaded to Terraform Cloud/Enterprise, defaults
-    # to the repository root. Respsects .terraformignore. Note: this is
-    # prefixed to the "Terraform Working Directory" in the remote workspace
-    # settings.
-    directory: integration/
-
     # The type of run, allowed options are 'plan', 'apply' and 'destroy'.
     type: apply
 
@@ -76,12 +69,6 @@ Full option list:
     # until the run is finished.
     wait-for-completion: true
 
-    # The contents of a auto.tfvars file that will be uploaded to Terraform
-    # Cloud. This can be used to set Terraform variables.
-    tf-vars: |
-      run_number = ${{ github.run_number }}
-      service    = "example"
-
   # Optionally, assign this step an ID so you can refer to the outputs from the
   # action with ${{ steps.<id>.outputs.<output variable> }}
   id: tfe-run
@@ -95,11 +82,9 @@ Name           | Required | Description                                         
 `organization` |          | Name of the organization on Terraform Cloud.                                                                    | string | The repository owner
 `workspace`    | yes      | Name of the workspace on Terraform Cloud.                                                                       | string |
 `message`      |          | Optional message to use as name of the run.                                                                     | string | _Queued by GitHub Actions (commit: $GITHUB_SHA)_
-`directory`    |          | The directory that is uploaded to Terraform Cloud/Enterprise, defaults to repository root. Respects .terraformignore. Note: this is prefixed to the "Terraform Working Directory" in the remote workspace settings. | string | `./`
 `type`         |          | The type of run, allowed options are 'plan', 'apply' and 'destroy'.                                             | string | `apply`
 `targets`      |          | An optional list of resource addresses to target. Should be a list of strings separated by new lines.           | string |
 `wait-for-completion` |   | Whether we should wait for the plan or run to be applied. This will block until the run is finished.            | string | `false`
-`tf-vars`      |          | The contents of a auto.tfvars file that will be uploaded to Terraform Cloud.                                    | string |
 
 [tfe-tokens]: https://www.terraform.io/docs/cloud/users-teams-organizations/api-tokens.html
 [tfe-speculative-run]: https://www.terraform.io/docs/cloud/run/index.html#speculative-plans
