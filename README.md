@@ -84,7 +84,8 @@ Name           | Required | Description                                         
 `message`      |          | Optional message to use as name of the run.                                                                     | string | _Queued by GitHub Actions (commit: $GITHUB_SHA)_
 `type`         |          | The type of run, allowed options are 'plan', 'apply' and 'destroy'.                                             | string | `apply`
 `targets`      |          | An optional list of resource addresses to target. Should be a list of strings separated by new lines.           | string |
-`wait-for-completion` |   | Whether we should wait for the plan or run to be applied. This will block until the run is finished.            | string | `false`
+`wait-for-completion` |   | Whether we should wait for the plan or run to be applied. This will block until the run is finished.            | string | `true`
+`print-outputs`| | Whether terraform outputs should be printed  | string | `true`
 
 [tfe-tokens]: https://www.terraform.io/docs/cloud/users-teams-organizations/api-tokens.html
 [tfe-speculative-run]: https://www.terraform.io/docs/cloud/run/index.html#speculative-plans

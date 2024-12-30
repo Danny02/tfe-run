@@ -23,6 +23,7 @@ type input struct {
 	Targets           string
 	Replacements      string
 	WaitForCompletion bool `gha:"wait-for-completion"`
+	PrintOutputs      bool `gha:"print-outputs"`
 }
 
 type ClientConfig struct {
@@ -68,9 +69,6 @@ func NewClient(ctx context.Context, cfg ClientConfig) (*Client, error) {
 type RunOptions struct {
 	// Message to use as name of the run. This field is optional.
 	Message *string
-	// The directory that is uploaded to Terraform Cloud, respects
-	// .terraformignore. Defaults to the current directory.
-	Directory *string
 	// The type of run to schedule.
 	Type RunType
 	// A list of resource addresses that are passed to the -target flag. For
@@ -82,10 +80,6 @@ type RunOptions struct {
 	// Whether we should wait for the non-speculative run to be applied. This
 	// will block until the run is finished.
 	WaitForCompletion bool
-	// Contents of a auto.tfvars file that will be uploaded to Terraform Cloud.
-	// This can be used to set temporary Terraform variables. These variables
-	// will not be preserved across runs.
-	TfVars *string
 }
 
 // RunType describes the type of run.
@@ -209,17 +203,17 @@ func prettyPrint(r tfe.RunStatus) string {
 	return strings.ReplaceAll(string(r), "_", " ")
 }
 
+type terraformOutput struct {
+	Value     interface{} `json:"value"`
+	Sensitive bool        `json:"sensitive"`
+}
+
 type minimalTerraformState struct {
 	Outputs map[string]terraformOutput `json:"outputs"`
 }
 
-type terraformOutput struct {
-	Type  string `json:"type"`
-	Value string `json:"value"`
-}
-
 // GetTerraformOutputs retrieves the outputs from the current Terraform state.
-func (c *Client) GetTerraformOutputs(ctx context.Context) (map[string]string, error) {
+func (c *Client) GetTerraformOutputs(ctx context.Context, shouldPrint bool) (map[string]string, error) {
 	s, err := c.client.StateVersions.ReadCurrent(ctx, c.workspace.ID)
 	if err != nil {
 		return nil, fmt.Errorf("could not get current state: %w", err)
@@ -236,14 +230,27 @@ func (c *Client) GetTerraformOutputs(ctx context.Context) (map[string]string, er
 		return nil, fmt.Errorf("could not parse state: %w", err)
 	}
 
+	fmt.Printf("Outputs from current state:\n")
 	outputs := make(map[string]string)
 	for k, v := range state.Outputs {
-		outputs[k] = v.Value
-	}
+		// Marshal the value back into JSON
+		valueBytes, err := json.Marshal(v.Value)
+		if err != nil {
+			return nil, fmt.Errorf("Could not marshal value for key %s: %v", k, err)
+		}
 
-	fmt.Printf("Outputs from current state:\n")
-	for k, v := range outputs {
-		fmt.Printf(" - %v: %v\n", k, v)
+		// Convert the JSON byte array to a string
+		outputs[k] = string(valueBytes)
+
+		if shouldPrint {
+			var value string
+			if v.Sensitive {
+				value = "***"
+			} else {
+				value = outputs[k]
+			}
+			fmt.Printf(" - %v: %v\n", k, value)
+		}
 	}
 
 	return outputs, nil
@@ -322,7 +329,7 @@ func main() {
 		gha.WriteOutput("has-changes", strconv.FormatBool(*output.HasChanges))
 	}
 
-	outputs, err := c.GetTerraformOutputs(ctx)
+	outputs, err := c.GetTerraformOutputs(ctx, input.PrintOutputs)
 	if err != nil {
 		exitWithError(err)
 	}

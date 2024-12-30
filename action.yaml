@@ -40,6 +40,11 @@ inputs:
       Whether we should wait for the plan or run to be applied. This will block until the run is finished. Defaults to true.
     required: false
     default: 'true'
+  print-outputs:
+    description: |
+      Whether terraform outputs should be printed 
+    required: false
+    default: 'true'
   message:
     description: |
       Optional message to use as name of the run.

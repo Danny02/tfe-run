@@ -3,7 +3,8 @@ module github.com/danny02/tfe-run
 go 1.23
 
 require (
-	github.com/sethvargo/go-githubactions v0.3.0
+	github.com/hashicorp/go-tfe v1.71.0
+	github.com/sethvargo/go-githubactions v1.3.0
 	github.com/stretchr/testify v1.9.0
 )
 
@@ -13,7 +14,6 @@ require (
 	github.com/hashicorp/go-cleanhttp v0.5.2 // indirect
 	github.com/hashicorp/go-retryablehttp v0.7.7 // indirect
 	github.com/hashicorp/go-slug v0.16.0 // indirect
-	github.com/hashicorp/go-tfe v1.71.0 // indirect
 	github.com/hashicorp/go-version v1.7.0 // indirect
 	github.com/hashicorp/jsonapi v1.3.1 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
