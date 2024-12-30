@@ -77,7 +77,7 @@ type RunOptions struct {
 	// The type of run to schedule.
 	Type RunType
 	// A list of resource addresses that are passed to the -target flag. For
-	// more details, check https://www.terraform.io/docs/commands/plan.html#resource-targeting
+	// more details, check https://developer.hashicorp.com/terraform/cli/commands/plan#resource-targeting
 	TargetAddrs []string
 	// A list of resource addresses that are passed to the -replace flag. For
 	// more details, check https://developer.hashicorp.com/terraform/cli/commands/plan#replace-address

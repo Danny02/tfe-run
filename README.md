@@ -61,8 +61,15 @@ Full option list:
     # An optional list of resource addresses to target. Should be a list of
     # strings separated by new lines.
     #
-    # For more information about resource targeting, check https://www.terraform.io/docs/commands/plan.html#resource-targeting
+    # For more information about resource targeting, check https://developer.hashicorp.com/terraform/cli/commands/plan#resource-targeting
     targets: |
+        resource.name
+
+    # An optional list of resource addresses to replace. Should be a list of
+    # strings separated by new lines.
+    #
+    # For more information about resource targeting, check https://developer.hashicorp.com/terraform/cli/commands/plan#replace-address
+    replacements: |
         resource.name
 
     # Whether we should wait for the plan or run to be applied. This will block
