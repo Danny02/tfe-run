@@ -7,8 +7,3 @@
 Follow these steps to create a new release:
 - create a new release from the Relases page.
 - assign it a tag with semantic version.
-- create or update the major version tag so it points to the latest release:
-```
-git tag -fa v1 -m "Update v1 tag"
-git push origin v1 --force
-```
